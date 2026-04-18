@@ -19,11 +19,9 @@ public class UserControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-        UserController.usersList.clear();
     }
 
     @Test

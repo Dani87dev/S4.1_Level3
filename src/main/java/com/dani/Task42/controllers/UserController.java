@@ -1,62 +1,34 @@
 package com.dani.Task42.controllers;
 
-import com.dani.Task42.exceptions.UserNameNotFoundException;
-import com.dani.Task42.exceptions.UserNotFoundException;
 import com.dani.Task42.models.User;
+import com.dani.Task42.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 public class UserController {
 
-    static List<User> usersList = new ArrayList<>();
+    private final UserService service;
 
-    /*
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return usersList;
+    public UserController(UserService service) {
+        this.service = service;
     }
-    */
 
     @GetMapping("/users")
-    public List<User> getUserByName(@RequestParam(required = false) String name) {
-
-        List<User> listUsersWithName = new ArrayList<>();
-
-        if (name == null) return usersList;
-
-        for (User user : usersList) {
-            if (user.getName().toLowerCase().contains(name.toLowerCase())) {
-                listUsersWithName.add(user);
-            }
-        }
-        return listUsersWithName;
-
+    public List<User> getUsers(@RequestParam(required = false) String name) {
+        if (name == null) return service.getAllUsers();
+        return service.getUsersByName(name);
     }
 
     @GetMapping("/users/{id}")
-    public User getEspecificUser(@PathVariable UUID id) {
-        User user1;
-        for (User user : usersList) {
-            if (user.getId().equals(id)) {
-                return user;
-            }
-        }
-        throw new UserNotFoundException();
+    public User getUserById(@PathVariable UUID id) {
+        return service.getUserById(id);
     }
 
     @PostMapping("/users")
     public User createUser(@RequestBody User user) {
-        UUID randomId = UUID.randomUUID();
-        String nameUser = user.getName();
-        String emailUser = user.getEmail();
-        User user1 = new User(randomId, nameUser, emailUser);
-
-        usersList.add(user1);
-        return user1;
+        return service.createUser(user.getName(), user.getEmail());
     }
-
 }
