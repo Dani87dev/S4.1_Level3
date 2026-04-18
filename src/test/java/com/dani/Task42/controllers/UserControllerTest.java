@@ -3,30 +3,31 @@ package com.dani.Task42.controllers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UserController.class)
+@SpringBootTest
 public class UserControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper = new tools.jackson.databind.ObjectMapper();
+    @Autowired
+    private WebApplicationContext context;
+    
 
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         UserController.usersList.clear();
     }
 
     @Test
     void getUsers_returnsEmptyListInitially() throws Exception {
-        // Simula GET /users
-        // Espera un array buit
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
@@ -34,15 +35,12 @@ public class UserControllerTest {
 
     @Test
     void createUser_returnsUserWithId() throws Exception {
-        // Simula POST /users amb JSON
-        // Espera que torni el mateix usuari amb UUID no nul
         mockMvc.perform(post("/users")
                         .contentType("application/json")
                         .content("{\"name\":\"Dani\",\"email\":\"dani@example.com\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.name").value("Dani"));
-
     }
 
     @Test
@@ -63,16 +61,12 @@ public class UserControllerTest {
 
     @Test
     void getUserById_returnsNotFoundIfMissing() throws Exception {
-        // Simula GET /users/{id} amb un id aleatori
-        // Espera 404
         mockMvc.perform(get("/users/{id}", "00000000-0000-0000-0000-000000000000"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getUsers_withNameParam_returnsFilteredUsers() throws Exception {
-        // Afegeix dos usuaris amb POST
-        // Fa GET /users?name=jo i comprova que només torni els que contenen "jo"
         mockMvc.perform(post("/users")
                 .contentType("application/json")
                 .content("{\"name\":\"Joan\",\"email\":\"joan@example.com\"}"));
@@ -85,6 +79,4 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Joan"));
     }
-
-
 }
